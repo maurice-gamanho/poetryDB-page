@@ -1,0 +1,92 @@
+/* General page styling */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f9;
+  margin: 10px;
+  padding: 0;
+}
+.container {
+  max-width: 80%;
+  margin: 30px auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+h1 {
+  text-align: center;
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+/* Table styling */
+table {
+  table-layout: auto;
+  width: 75%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+th, td {
+  padding: 12px;
+  text-align: left;
+  width: 600px;
+  max-width: 600px;
+  overflow-x: auto;
+}
+th {
+  position: sticky;
+  background-color: #5c6bc0;
+  color: #fff;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+td {
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+}
+tr:hover {
+  background-color: #f1f1f1;
+}
+tr:nth-child(even) td {
+  background-color: #f3f3f3;
+}
+tbody {
+  display: block;
+  max-height: 400px;
+  overflow-y: auto;
+  width: 100%;
+}
+thead {
+  display: block;
+  width: 100%;
+}
+
+/* input style */
+input, button {
+    padding: 6px 12px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    appearance: none;
+    border-radius: 4px;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    :focus{
+        color: #212529;
+        background-color: #fff;
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 25%);
+    }
+}
+
+/* Optional: Styling for the table container */
+#table-container {
+  margin-top: 20px;
+}

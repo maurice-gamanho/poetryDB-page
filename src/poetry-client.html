@@ -1,0 +1,270 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poetry Interface</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <p>Poets</p>
+
+  <input style='width: 300px' type="text" id="poetsInput"/>
+
+  <pre id="authors"></pre>
+
+  <br>
+  <p>Titles for author (type portion of name for broader display)</p>
+
+  <input style='width: 300px' type="text" id="myInput"/>
+  <button onclick="getInputValue()">Get Titles</button>
+
+  <pre id="titles"></pre>
+
+  <br>
+  <p>Lines (poem is displayed here)</p>
+  <pre id="lines"></pre>
+
+  <script>
+      init();
+
+      const liveInput = document.getElementById('poetsInput');
+        liveInput.addEventListener('input', (e) => {
+          document.getElementById("lines").innerHTML = "";
+          if (e.target.value == "") {
+             init();
+          } else {
+            inputChanged(e.target.value);
+          }
+        });
+
+      function clickAuthor() {
+          document.getElementById("lines").innerHTML = "";
+          if (document.getElementById("titles").firstChild) {
+            document.getElementById("titles").firstChild.remove();
+          }
+          const author = this.cells[0].textContent;
+          document.getElementById("myInput").value = author;
+      }
+
+      function init() {
+          fetch('https://poetrydb.org/authors')
+            .then(response => {
+             if (response.ok) {
+               return response.json();
+             } else {
+               console.log("there was an error");
+               throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+            })
+            .then(authors => {
+              if (authors && 'status' in authors) {
+                throw new Error(authors.reason);
+              }
+
+              const authorsOuter = JSON.parse(JSON.stringify(authors));
+              const authorsData = authorsOuter.authors;
+
+              const table = document.createElement('table');
+              table.style.width = '400px';
+
+              // header
+              const thead = document.createElement('thead');
+              table.appendChild(thead);
+
+              const headerRow = document.createElement('tr');
+              const th = document.createElement('th');
+              th.textContent = "Author";
+              headerRow.appendChild(th);
+              thead.appendChild(headerRow);
+
+              // rows
+              const tbody = document.createElement('tbody');
+              table.appendChild(tbody);
+
+              authorsData.forEach(item => {
+                const row = document.createElement('tr');
+                row.addEventListener('click', clickAuthor);
+
+                const td = document.createElement('td');
+                td.textContent = item || ""; // Fill empty fields with blank
+                row.appendChild(td);
+                tbody.appendChild(row);
+              });
+
+              if (document.getElementById("authors").firstChild) {
+                document.getElementById("authors").firstChild.remove();
+              }
+
+              document.getElementById("authors").appendChild(table);
+            })
+            .catch(error => {
+            console.log(error);
+              document.getElementById("authors").innerHTML = error;
+              throw error;
+            });
+      }
+
+      function inputChanged(a) {
+          fetch('https://poetrydb.org/author/' + a + '/author')
+            .then(response => {
+              if (response.ok) {
+                return response.json();
+              } else {
+                console.log("there was an error");
+                throw new Error(`HTTP error! Status: ${response.status}`);
+               }
+            })
+            .then(authors => {
+              if (authors && 'status' in authors) {
+                throw new Error(authors.reason);
+              }
+
+              const authorsData = JSON.parse(JSON.stringify(authors));
+
+              // remove duplicates
+              const s = new Set();
+              authorsData.forEach(item => {
+                s.add(item.author);
+              });
+              const arr = Array.from(s);
+              const uniqueAuthorsData = arr.map((val) => { return { author: val } });
+
+              const table = document.createElement('table');
+              table.style.width = '400px';
+
+              // header
+              const thead = document.createElement('thead');
+              table.appendChild(thead);
+
+              const headerRow = document.createElement('tr');
+              const keys = Object.keys(uniqueAuthorsData[0]);
+              keys.forEach(key => {
+                  const th = document.createElement('th');
+                  th.textContent = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize header
+                  headerRow.appendChild(th);
+              });
+              thead.appendChild(headerRow);
+
+              // rows
+              const tbody = document.createElement('tbody');
+              table.appendChild(tbody);
+
+              uniqueAuthorsData.forEach(item => {
+                const row = document.createElement('tr');
+                row.addEventListener('click', clickAuthor);
+
+                keys.forEach(key => {
+                  const td = document.createElement('td');
+                  td.textContent = item[key] || "";
+                  row.appendChild(td);
+                });
+                tbody.appendChild(row);
+              });
+
+              if (document.getElementById("authors").firstChild) {
+                document.getElementById("authors").firstChild.remove();
+              }
+
+              document.getElementById("authors").appendChild(table);
+            })
+            .catch(error => {
+                console.log(error);
+                  document.getElementById("authors").innerHTML = error;
+                  throw error;
+            });
+      }
+
+    function fetchLines(author, title) {
+        fetch('https://poetrydb.org/title/' + title + '/lines')
+          .then(response => {
+              return response.json()
+          })
+          .then(lines => {
+              if (lines && 'status' in lines) {
+                  throw new Error(lines.reason);
+              }
+
+              const linesObj = JSON.parse(JSON.stringify(lines));
+              document.getElementById("lines").innerHTML =
+                  'Author: ' + author + '\n\n' + 'Title: ' + title + '\n\n' +
+                  linesObj[0].lines.join('\n');
+          })
+          .catch(error => {
+              document.getElementById("titles").innerHTML = error;
+              throw error;
+          });
+    }
+
+    function getInputValue() {
+        document.getElementById("lines").innerHTML = "";
+        if (document.getElementById("titles").firstChild) {
+            document.getElementById("titles").firstChild.remove();
+        }
+
+        const author = document.getElementById('myInput').value;
+
+        fetch('https://poetrydb.org/author/' + author + '/author,title')
+          .then(response => {
+              if (response.ok) {
+                return response.json();
+              } else {
+                console.log("there was an error");
+                throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+            })
+          .then(titles => {
+            if (titles && 'status' in titles) {
+              throw new Error(titles.reason);
+            }
+
+            const titlesData = JSON.parse(JSON.stringify(titles));
+            const table = document.createElement('table');
+
+            // header
+            const thead = document.createElement('thead');
+            table.appendChild(thead);
+
+            const headerRow = document.createElement('tr');
+            const keys = Object.keys(titlesData[0]);
+            keys.forEach(key => {
+              const th = document.createElement('th');
+              th.textContent = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize header
+              headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            // rows
+            const tbody = document.createElement('tbody');
+            table.appendChild(tbody);
+
+            titlesData.forEach(item => {
+              const row = document.createElement('tr');
+              row.addEventListener('click', function() {
+                const title = this.cells[0].textContent;
+
+                fetchLines(author, title);
+              });
+              keys.forEach(key => {
+                const td = document.createElement('td');
+                td.textContent = item[key] || "";
+                row.appendChild(td);
+              });
+              tbody.appendChild(row);
+            });
+
+          document.getElementById("titles").appendChild(table);
+        })
+        .catch(error => {
+            document.getElementById("titles").innerHTML = error;
+            throw error;
+        });
+}
+</script>
+
+</body>
+
+</html>
